@@ -1,0 +1,752 @@
+Denkprozess
+
+Denkprozess
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mein Tagesplaner</title>
+
+  <style>
+    :root {
+      --background: #111018;
+      --card: #1C1A26;
+      --input: #15131D;
+      --list-item: #17151F;
+      --accent: #A78BFA;
+      --highlight: #E879F9;
+      --text: #F5F3FF;
+      --muted: #AAA5B8;
+      --border: #34303F;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 48px 20px;
+      background: var(--background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    .seite {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .kopf {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: -0.04em;
+    }
+
+    h2 {
+      margin-bottom: 6px;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .untertitel,
+    .beschreibung,
+    .hinweis {
+      color: var(--muted);
+    }
+
+    .untertitel {
+      margin-bottom: 0;
+    }
+
+    .stern {
+      color: var(--highlight);
+    }
+
+    .karte {
+      margin-bottom: 20px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: 0 18px 45px #00000025;
+    }
+
+    .kartenkopf {
+      margin-bottom: 22px;
+    }
+
+    .kartenkopf .beschreibung {
+      margin-bottom: 0;
+    }
+
+    .fortschritt-kopf {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .prozent {
+      color: var(--accent);
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .fortschritt-text {
+      margin: 4px 0 14px;
+      color: var(--muted);
+    }
+
+    progress {
+      display: block;
+      width: 100%;
+      height: 12px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 999px;
+      background: var(--input);
+      accent-color: var(--accent);
+    }
+
+    progress::-webkit-progress-bar {
+      border-radius: 999px;
+      background: var(--input);
+    }
+
+    progress::-webkit-progress-value {
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    progress::-moz-progress-bar {
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .formular-zeile {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 145px 145px;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--input);
+      color: var(--text);
+      font: inherit;
+    }
+
+    input[type="text"]::placeholder {
+      color: #908A9F;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 11px 17px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #171320;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    button:hover {
+      background: #BCA7FF;
+      transform: translateY(-1px);
+    }
+
+    :is(input, select, button):focus-visible {
+      outline: 3px solid var(--highlight);
+      outline-offset: 3px;
+    }
+
+    .aufgabenliste {
+      display: grid;
+      gap: 10px;
+      margin: 24px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .aufgabe {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--list-item);
+    }
+
+    .aufgabe input[type="checkbox"] {
+      width: 19px;
+      height: 19px;
+      margin: 0;
+      flex: none;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .aufgaben-inhalt {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .aufgaben-name {
+      display: block;
+      overflow-wrap: anywhere;
+      font-weight: 600;
+    }
+
+    .aufgabe.erledigt .aufgaben-name {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .etiketten {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 7px;
+    }
+
+    .etikett {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .etikett.hoch {
+      border-color: #75425F;
+      color: #F2A5CD;
+    }
+
+    .etikett.mittel {
+      border-color: #665381;
+      color: #C8B4FF;
+    }
+
+    .loeschen {
+      min-height: 36px;
+      padding: 7px 10px;
+      flex: none;
+      background: #392638;
+      color: #F4B3DA;
+      font-size: 0.85rem;
+    }
+
+    .loeschen:hover {
+      background: #523049;
+    }
+
+    .leer,
+    .speicherhinweis {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .leer {
+      margin-top: 22px;
+    }
+
+    .speicherhinweis {
+      margin-top: 18px;
+    }
+
+    .helfer {
+      border-color: #51405E;
+    }
+
+    .demo-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 4px 9px;
+      border: 1px solid #6A466E;
+      border-radius: 999px;
+      color: #F1B1F5;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .helfer-formular {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .helfer-formular input {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .antwort {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--input);
+    }
+
+    .antwort strong {
+      color: var(--accent);
+    }
+
+    .antwort p {
+      margin: 6px 0 0;
+    }
+
+    .hinweis {
+      margin: 16px 0 0;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 620px) {
+      body {
+        padding: 28px 14px;
+      }
+
+      .karte {
+        padding: 21px 18px;
+      }
+
+      .formular-zeile {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .feld-aufgabe {
+        grid-column: 1 / -1;
+      }
+
+      .helfer-formular {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .formular-zeile {
+        grid-template-columns: 1fr;
+      }
+
+      .feld-aufgabe {
+        grid-column: auto;
+      }
+
+      .aufgabe {
+        flex-wrap: wrap;
+      }
+
+      .loeschen {
+        margin-left: 32px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      button {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="seite">
+    <header class="kopf">
+      <p class="eyebrow">Dein Fokus für heute</p>
+      <h1>Mein Tagesplaner <span class="stern">✦</span></h1>
+      <p class="untertitel">Ein klarer Plan. Ein Schritt nach dem anderen.</p>
+    </header>
+
+    <section class="karte" aria-labelledby="fortschritt-titel">
+      <div class="fortschritt-kopf">
+        <h2 id="fortschritt-titel">Dein Fortschritt</h2>
+        <span class="prozent" id="prozent">0 %</span>
+      </div>
+      <p class="fortschritt-text" id="fortschritt-text">0 von 0 Aufgaben erledigt</p>
+      <progress id="fortschritt" value="0" max="100"
+                aria-label="Anteil erledigter Aufgaben"></progress>
+    </section>
+
+    <section class="karte" aria-labelledby="aufgaben-titel">
+      <div class="kartenkopf">
+        <h2 id="aufgaben-titel">Deine Aufgaben</h2>
+        <p class="beschreibung">Was steht als Nächstes an?</p>
+      </div>
+
+      <form id="aufgaben-formular">
+        <div class="formular-zeile">
+          <div class="feld-aufgabe">
+            <label for="neue-aufgabe">Neue Aufgabe</label>
+            <input id="neue-aufgabe" type="text"
+                   placeholder="Zum Beispiel: Für Mathe lernen"
+                   maxlength="120" required>
+          </div>
+
+          <div>
+            <label for="prioritaet">Priorität</label>
+            <select id="prioritaet">
+              <option value="Hoch">Hoch</option>
+              <option value="Mittel" selected>Mittel</option>
+              <option value="Niedrig">Niedrig</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="kategorie">Kategorie</label>
+            <select id="kategorie">
+              <option value="Studium">Studium</option>
+              <option value="Alltag" selected>Alltag</option>
+              <option value="Gesundheit">Gesundheit</option>
+              <option value="Sonstiges">Sonstiges</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit">Aufgabe hinzufügen</button>
+      </form>
+
+      <ul class="aufgabenliste" id="aufgabenliste"></ul>
+      <p class="leer" id="leere-liste" hidden>
+        Noch keine Aufgaben da. Füge oben deine erste Aufgabe hinzu!
+      </p>
+
+      <p class="speicherhinweis" id="speicherhinweis">
+        Deine Aufgaben werden nur in diesem Browser gespeichert.
+      </p>
+    </section>
+
+    <section class="karte helfer" aria-labelledby="helfer-titel">
+      <span class="demo-label">DEMO · NOCH KEINE ECHTE KI</span>
+      <h2 id="helfer-titel">Dein KI-Helfer <span class="stern">✦</span></h2>
+      <p class="beschreibung">
+        Frag nach einem Tipp fürs Lernen, Kochen oder Sport.
+      </p>
+
+      <form id="helfer-formular" class="helfer-formular">
+        <input id="helfer-frage" type="text"
+               aria-label="Deine Frage an den Helfer"
+               placeholder="Wobei brauchst du Unterstützung?"
+               maxlength="300" required>
+        <button type="submit">Tipp holen</button>
+      </form>
+
+      <div class="antwort" role="status" aria-live="polite">
+        <strong>Antwort des Helfers</strong>
+        <p id="helfer-antwort">
+          Schreib eine Frage – ich gebe dir einen passenden Tipp.
+        </p>
+      </div>
+
+      <p class="hinweis">
+        Dieser Helfer nutzt feste Regeln, keine KI. Eine echte KI könnte
+        später über einen sicheren Server angebunden werden.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const SPEICHER_SCHLUESSEL = "mein-tagesplaner-aufgaben-v1";
+
+    const startAufgaben = [
+      {
+        id: "start-1",
+        text: "In die Hochschule gehen",
+        erledigt: false,
+        prioritaet: "Hoch",
+        kategorie: "Studium"
+      },
+      {
+        id: "start-2",
+        text: "Mittagessen",
+        erledigt: false,
+        prioritaet: "Mittel",
+        kategorie: "Alltag"
+      },
+      {
+        id: "start-3",
+        text: "Kochen",
+        erledigt: false,
+        prioritaet: "Mittel",
+        kategorie: "Alltag"
+      },
+      {
+        id: "start-4",
+        text: "Ins Gym gehen",
+        erledigt: false,
+        prioritaet: "Niedrig",
+        kategorie: "Gesundheit"
+      }
+    ];
+
+    const liste = document.getElementById("aufgabenliste");
+    const speicherhinweis = document.getElementById("speicherhinweis");
+    const erlaubtePrioritaeten = ["Hoch", "Mittel", "Niedrig"];
+    const erlaubteKategorien = [
+      "Studium", "Alltag", "Gesundheit", "Sonstiges"
+    ];
+
+    function aufgabenLaden() {
+      try {
+        const gespeichert = localStorage.getItem(SPEICHER_SCHLUESSEL);
+
+        // Nur wenn noch kein Eintrag existiert, erscheinen die Startaufgaben.
+        // Eine gespeicherte leere Liste ("[]") bleibt dagegen leer.
+        if (gespeichert === null) {
+          return startAufgaben.map(aufgabe => ({ ...aufgabe }));
+        }
+
+        const daten = JSON.parse(gespeichert);
+
+        if (!Array.isArray(daten)) {
+          throw new Error("Gespeicherte Daten sind keine Aufgabenliste.");
+        }
+
+        // Eingelesene Daten prüfen, bevor sie auf der Seite angezeigt werden.
+        return daten
+          .filter(aufgabe =>
+            aufgabe &&
+            typeof aufgabe.id === "string" &&
+            typeof aufgabe.text === "string" &&
+            typeof aufgabe.erledigt === "boolean" &&
+            erlaubtePrioritaeten.includes(aufgabe.prioritaet) &&
+            erlaubteKategorien.includes(aufgabe.kategorie)
+          )
+          .map(aufgabe => ({
+            id: aufgabe.id,
+            text: aufgabe.text,
+            erledigt: aufgabe.erledigt,
+            prioritaet: aufgabe.prioritaet,
+            kategorie: aufgabe.kategorie
+          }));
+      } catch (fehler) {
+        speicherhinweis.textContent =
+          "Gespeicherte Aufgaben konnten nicht geladen werden. " +
+          "Die Startaufgaben werden vorübergehend angezeigt.";
+        return startAufgaben.map(aufgabe => ({ ...aufgabe }));
+      }
+    }
+
+    let aufgaben = aufgabenLaden();
+
+    function aufgabenSpeichern() {
+      try {
+        localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(aufgaben));
+        speicherhinweis.textContent =
+          "Deine Aufgaben werden nur in diesem Browser gespeichert.";
+      } catch (fehler) {
+        speicherhinweis.textContent =
+          "Speichern ist in diesem Browser gerade nicht möglich. " +
+          "Änderungen können beim Neuladen verloren gehen.";
+      }
+    }
+
+    function fortschrittAktualisieren() {
+      const gesamt = aufgaben.length;
+      const erledigt = aufgaben.filter(aufgabe => aufgabe.erledigt).length;
+      const prozent = gesamt === 0
+        ? 0
+        : Math.round((erledigt / gesamt) * 100);
+
+      document.getElementById("fortschritt-text").textContent =
+        `${erledigt} von ${gesamt} Aufgaben erledigt`;
+      document.getElementById("prozent").textContent = `${prozent} %`;
+      document.getElementById("fortschritt").value = prozent;
+    }
+
+    function aufgabenAnzeigen() {
+      liste.replaceChildren();
+      document.getElementById("leere-liste").hidden = aufgaben.length !== 0;
+
+      for (const aufgabe of aufgaben) {
+        const eintrag = document.createElement("li");
+        eintrag.className = "aufgabe";
+
+        if (aufgabe.erledigt) {
+          eintrag.classList.add("erledigt");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = aufgabe.erledigt;
+        checkbox.setAttribute(
+          "aria-label",
+          `Aufgabe „${aufgabe.text}“ als erledigt markieren`
+        );
+
+        checkbox.addEventListener("change", () => {
+          aufgabe.erledigt = checkbox.checked;
+          aufgabenSpeichern();
+          aufgabenAnzeigen();
+        });
+
+        const inhalt = document.createElement("div");
+        inhalt.className = "aufgaben-inhalt";
+
+        const name = document.createElement("span");
+        name.className = "aufgaben-name";
+
+        // Nutzereingaben nie ungeprüft als HTML einsetzen.
+        name.textContent = aufgabe.text;
+
+        const etiketten = document.createElement("div");
+        etiketten.className = "etiketten";
+
+        const prioritaet = document.createElement("span");
+        prioritaet.className =
+          `etikett ${aufgabe.prioritaet.toLowerCase()}`;
+        prioritaet.textContent = `Priorität: ${aufgabe.prioritaet}`;
+
+        const kategorie = document.createElement("span");
+        kategorie.className = "etikett";
+        kategorie.textContent = aufgabe.kategorie;
+
+        etiketten.append(prioritaet, kategorie);
+        inhalt.append(name, etiketten);
+
+        const loeschen = document.createElement("button");
+        loeschen.type = "button";
+        loeschen.className = "loeschen";
+        loeschen.textContent = "Löschen";
+        loeschen.setAttribute(
+          "aria-label",
+          `Aufgabe „${aufgabe.text}“ löschen`
+        );
+
+        loeschen.addEventListener("click", () => {
+          aufgaben = aufgaben.filter(eintrag => eintrag.id !== aufgabe.id);
+          aufgabenSpeichern();
+          aufgabenAnzeigen();
+        });
+
+        eintrag.append(checkbox, inhalt, loeschen);
+        liste.append(eintrag);
+      }
+
+      fortschrittAktualisieren();
+    }
+
+    document
+      .getElementById("aufgaben-formular")
+      .addEventListener("submit", event => {
+        event.preventDefault();
+
+        const textfeld = document.getElementById("neue-aufgabe");
+        const text = textfeld.value.trim();
+
+        if (!text) {
+          textfeld.focus();
+          return;
+        }
+
+        aufgaben.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          text: text,
+          erledigt: false,
+          prioritaet: document.getElementById("prioritaet").value,
+          kategorie: document.getElementById("kategorie").value
+        });
+
+        aufgabenSpeichern();
+        aufgabenAnzeigen();
+        textfeld.value = "";
+        textfeld.focus();
+      });
+
+    document
+      .getElementById("helfer-formular")
+      .addEventListener("submit", event => {
+        event.preventDefault();
+
+        const frage = document
+          .getElementById("helfer-frage")
+          .value.trim()
+          .toLocaleLowerCase("de");
+
+        if (!frage) {
+          document.getElementById("helfer-frage").focus();
+          return;
+        }
+
+        let antwort =
+          "Wähle eine Aufgabe aus, teile sie in einen kleinen ersten " +
+          "Schritt auf und fang damit an. Du musst nicht alles auf einmal schaffen.";
+
+        if (
+          frage.includes("lernen") ||
+          frage.includes("prüfung") ||
+          frage.includes("hochschule") ||
+          frage.includes("studium")
+        ) {
+          antwort =
+            "Such dir ein konkretes Lernziel und arbeite 25 Minuten " +
+            "konzentriert daran. Danach machst du eine kurze Pause.";
+        } else if (
+          frage.includes("kochen") ||
+          frage.includes("essen") ||
+          frage.includes("rezept")
+        ) {
+          antwort =
+            "Überleg zuerst, was du kochen möchtest. Prüfe dann deine " +
+            "Zutaten und beginne mit einem einfachen Rezept.";
+        } else if (
+          frage.includes("gym") ||
+          frage.includes("sport") ||
+          frage.includes("training")
+        ) {
+          antwort =
+            "Leg deine Sportsachen bereit und plane eine feste Uhrzeit. " +
+            "Schon ein kurzes Training ist ein guter Anfang.";
+        }
+
+        document.getElementById("helfer-antwort").textContent = antwort;
+      });
+
+    // Beim ersten Öffnen die Startliste im Browser speichern.
+    if (localStorage.getItem(SPEICHER_SCHLUESSEL) === null) {
+      aufgabenSpeichern();
+    }
+
+    aufgabenAnzeigen();
+  </script>
+</body>
+</html>
